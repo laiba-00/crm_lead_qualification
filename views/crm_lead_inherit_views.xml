@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_crm_lead_hide_generate_button" model="ir.ui.view">
+        <field name="name">crm.lead.hide.generate.button</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm_iap_mine.crm_case_kanban_view_leads"/>
+        <field name="priority">100</field>
+        <field name="arch" type="xml">
+
+            <xpath expr="//button[@name='action_generate_leads']" position="replace"/>
+
+        </field>
+    </record>
+
+</odoo>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        <!--    <record id="view_crm_lead_kanban_inherit" model="ir.ui.view">-->
+<!--        <field name="name">crm.lead.kanban.inherit.qualification</field>-->
+<!--        <field name="model">crm.lead</field>-->
+<!--        <field name="inherit_id" ref="crm.view_crm_lead_kanban"/>-->
+<!--        <field name="arch" type="xml">-->
+<!--            <kanban position="attributes">-->
+<!--                <attribute name="quick_create">false</attribute>-->
+<!--                <attribute name="create">false</attribute>-->
+<!--            </kanban>-->
+<!--            <xpath expr="//button[@name='action_generate_leads']" position="replace">-->
+<!--                <span/>-->
+<!--            </xpath>-->
+<!--        </field>-->
+<!--    </record>-->
+
+<!--</odoo>-->

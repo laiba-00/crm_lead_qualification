@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!--
+            ============================================================
+            NOTE: crm.stage has NO 'active' field in Odoo 17 (confirmed
+            by install error - ValueError: Invalid field 'active' on
+            model 'crm.stage'). The stock demo stages (New, Qualified,
+            Proposition, Won) cannot be archived this way.
+
+            Instead, the "stages mixing" bug is fixed at the VIEW
+            layer: every stage_id statusbar widget in this module's
+            form views (agent, closer, manager) carries an explicit
+            domain="[('team_id','=',team_id)]", which excludes any
+            stage with team_id=False (i.e. the stock global stages)
+            from ever appearing. See views/crm_lead_agent_views.xml,
+            views/crm_lead_closer_views.xml, and
+            views/crm_lead_manager_views.xml.
+            ============================================================
+        -->
+
+        <!--
+            ============================================================
+            Req #8: Lead Qualification Team stages (1-7 of 11)
+            team_id is set on every record below - this is what stops
+            them from ever being treated as global/shared, and is the
+            other half of the mixing-bug fix above.
+            ============================================================
+        -->
+        <record id="stage_new_lead" model="crm.stage">
+            <field name="name">New Lead</field>
+            <field name="sequence">1</field>
+            <field name="team_id" ref="team_lead_qualification"/>
+        </record>
+
+        <record id="stage_assigned" model="crm.stage">
+            <field name="name">Assigned</field>
+            <field name="sequence">2</field>
+            <field name="team_id" ref="team_lead_qualification"/>
+        </record>
+
+        <record id="stage_attempting_contact" model="crm.stage">
+            <field name="name">Attempting Contact</field>
+            <field name="sequence">3</field>
+            <field name="team_id" ref="team_lead_qualification"/>
+        </record>
+
+        <record id="stage_contacted" model="crm.stage">
+            <field name="name">Contacted</field>
+            <field name="sequence">4</field>
+            <field name="team_id" ref="team_lead_qualification"/>
+        </record>
+
+        <record id="stage_follow_up" model="crm.stage">
+            <field name="name">Follow-Up</field>
+            <field name="sequence">5</field>
+            <field name="team_id" ref="team_lead_qualification"/>
+        </record>
+
+        <record id="stage_qualified" model="crm.stage">
+            <field name="name">Qualified</field>
+            <field name="sequence">6</field>
+            <field name="team_id" ref="team_lead_qualification"/>
+        </record>
+
+        <record id="stage_hot_lead" model="crm.stage">
+            <field name="name">Hot Lead</field>
+            <field name="sequence">7</field>
+            <field name="team_id" ref="team_lead_qualification"/>
+            <!--
+                Fold this stage on the agent's kanban: once a lead sits
+                here it is about to be transferred via the wizard, so
+                folding keeps the agent's active working view focused
+                on leads still in progress.
+            -->
+            <field name="fold" eval="True"/>
+        </record>
+
+        <!--
+            ============================================================
+            Req #8: Closing Team stages (8-11 of 11)
+            ============================================================
+        -->
+        <record id="stage_transferred" model="crm.stage">
+            <field name="name">Transferred to Closing Team</field>
+            <field name="sequence">8</field>
+            <field name="team_id" ref="team_closing"/>
+        </record>
+
+        <record id="stage_customer_setup" model="crm.stage">
+            <field name="name">Customer Setup</field>
+            <field name="sequence">9</field>
+            <field name="team_id" ref="team_closing"/>
+        </record>
+
+        <record id="stage_active_customer" model="crm.stage">
+            <field name="name">Active Customer</field>
+            <field name="sequence">10</field>
+            <field name="team_id" ref="team_closing"/>
+            <!--
+                Req #7: is_won marks this as a successful pipeline exit,
+                which feeds Odoo's own win-rate reporting on top of our
+                custom outcome field on crm.lead.
+            -->
+            <field name="is_won" eval="True"/>
+        </record>
+
+        <record id="stage_lost" model="crm.stage">
+            <field name="name">Lost</field>
+            <field name="sequence">11</field>
+            <field name="team_id" ref="team_closing"/>
+            <field name="fold" eval="True"/>
+        </record>
+
+    </data>
+</odoo>

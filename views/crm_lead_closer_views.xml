@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--
+        Inherited view that overrides the agent form's readonly stage_id
+        specifically for the Closer group. This means when a Closer opens
+        any crm.lead form (from Pipeline or My Hot Leads), the stage_id
+        statusbar will be clickable and no banner will show.
+    -->
+    <record id="view_crm_lead_closer_stage_override" model="ir.ui.view">
+        <field name="name">crm.lead.closer.stage.override</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="view_crm_lead_agent_form"/>
+        <field name="arch" type="xml">
+            <field name="stage_id" position="replace">
+                <!-- Agent: readonly when transferred, clickable when not -->
+                <field name="stage_id" widget="statusbar"
+                       options="{'clickable': '1'}"
+                       readonly="is_transferred"
+                       groups="crm_lead_qualification.group_lead_qualification_agent"/>
+                <!-- Closer/Manager/Admin: always clickable, no readonly -->
+                <field name="stage_id" widget="statusbar"
+                       options="{'clickable': '1'}"
+                       groups="crm_lead_qualification.group_lead_qualification_closer,crm_lead_qualification.group_lead_qualification_manager,crm_lead_qualification.group_lead_qualification_admin"/>
+            </field>
+            <!-- Add Won/Lost buttons for Closer in header -->
+            <button name="action_open_transfer_wizard" position="before">
+                <button name="action_close_as_won"
+                        string="Mark as Won (Active Customer)"
+                        type="object"
+                        class="btn-primary"
+                        invisible="not is_transferred or outcome != False"
+                        groups="crm_lead_qualification.group_lead_qualification_closer"/>
+                <button name="action_close_as_lost"
+                        string="Mark as Lost"
+                        type="object"
+                        class="btn-secondary"
+                        invisible="not is_transferred or outcome != False"
+                        groups="crm_lead_qualification.group_lead_qualification_closer"/>
+            </button>
+            <!-- Remove banner for Closer/Manager/Admin only, keep for Agent -->
+            <xpath expr="//div[hasclass('alert-warning')]" position="attributes">
+                <attribute name="groups">crm_lead_qualification.group_lead_qualification_agent</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <!--
+        ================================================================
+        REQ #6: Closing Team's working pipeline.
+        Record rule rule_lead_closer_own restricts this to leads where
+        closer_id = the logged-in closer, so no extra domain security
+        is needed here either - action domain below is again
+        defence-in-depth / convenience, matching the closer_id filter
+        the record rule already enforces.
+        ================================================================
+    -->
+
+    <record id="view_crm_lead_closer_tree" model="ir.ui.view">
+        <field name="name">crm.lead.closer.tree</field>
+        <field name="model">crm.lead</field>
+        <field name="arch" type="xml">
+            <tree string="My Hot Leads" create="0">
+                <field name="partner_name" string="Company Name"/>
+                <field name="contact_name"/>
+                <field name="phone"/>
+                <field name="date_transferred"/>
+                <field name="stage_id"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_crm_lead_closer_form" model="ir.ui.view">
+        <field name="name">crm.lead.closer.form</field>
+        <field name="model">crm.lead</field>
+        <field name="arch" type="xml">
+            <form string="Hot Lead" create="0">
+                <header>
+                    <!--
+                        Req #6: "convert into active customer" /
+                        "close the deal". Both buttons invisible once
+                        the deal is already closed (outcome set), so a
+                        closer can't accidentally flip a Won lead to
+                        Lost or re-trigger the same close action twice.
+                    -->
+                    <button name="action_close_as_won"
+                            string="Mark as Won (Active Customer)"
+                            type="object"
+                            class="btn-primary"
+                            invisible="outcome != False"/>
+                    <button name="action_close_as_lost"
+                            string="Mark as Lost"
+                            type="object"
+                            class="btn-secondary"
+                            invisible="outcome != False"/>
+                    <!--
+                        Restrict the statusbar to Closing Team stages
+                        only, so a closer can never accidentally push a
+                        lead back into a Qualification-team stage.
+                    -->
+                    <field name="stage_id" widget="statusbar"
+                           options="{'clickable': '1'}"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group string="Company">
+                            <field name="name" string="Opportunity/Lead Name"/>
+                            <field name="partner_name" string="Company Name"/>
+                            <field name="contact_name"/>
+                            <field name="phone"/>
+                            <field name="email_from"/>
+                        </group>
+                        <group string="Transfer Info">
+                            <field name="qualification_agent_id"
+                                   string="Qualified By" readonly="1"/>
+                            <field name="date_transferred" readonly="1"/>
+                            <field name="outcome" readonly="1"/>
+                            <field name="team_id" invisible="1"/>
+                            <field name="company_id" invisible="1"/>
+                        </group>
+                    </group>
+                    <group string="Customer Conversion">
+                        <!--
+                            Req #6: "convert the opportunity into an
+                            active customer". partner_id is crm.lead's
+                            own stock field linking to res.partner -
+                            Odoo's built-in Many2one "Create and Edit"
+                            option on this field IS the conversion
+                            mechanism, no custom wizard needed for it.
+                        -->
+                        <field name="partner_id" string="Customer"/>
+                    </group>
+                    <notebook>
+                        <page string="Closing Notes">
+                            <!--
+                                Req #6: "add notes" during the closing
+                                process. closing_notes is separate from
+                                description (the agent's qualification
+                                notes) so the two phases don't get
+                                mixed together in one free-text field.
+                            -->
+                            <field name="closing_notes" nolabel="1"
+                                   placeholder="Meeting notes, negotiation details..."/>
+                        </page>
+                        <page string="Original Qualification Notes">
+                            <field name="description" readonly="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_crm_lead_closer_pipeline" model="ir.actions.act_window">
+        <field name="name">My Hot Leads</field>
+        <field name="res_model">crm.lead</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('is_transferred', '=', True)]</field>
+        <field name="view_ids"
+               eval="[(5, 0, 0),
+                      (0, 0, {'view_mode': 'tree', 'view_id': ref('view_crm_lead_closer_tree')}),
+                      (0, 0, {'view_mode': 'form', 'view_id': ref('view_crm_lead_closer_form')})]"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No Hot Leads transferred to you yet.
+            </p>
+        </field>
+    </record>
+
+</odoo>

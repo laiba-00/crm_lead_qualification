@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Req #1, #3: Lead Qualification Team - where Sales Agents work
+        cold leads before they are qualified as Hot Leads.
+
+        noupdate="1" so that if you rename the team or change its
+        members later through the UI, a module upgrade will NOT
+        overwrite your changes.
+    -->
+    <data noupdate="1">
+
+        <record id="team_lead_qualification" model="crm.team">
+            <field name="name">Lead Qualification Team</field>
+            <field name="use_leads" eval="True"/>
+            <field name="use_opportunities" eval="True"/>
+            <field name="sequence">10</field>
+        </record>
+
+        <!--
+            Req #6, #7, #8: Closing Team - where transferred Hot Leads
+            land, and where the Department Head / Partner work them
+            through to Won/Lost.
+        -->
+        <record id="team_closing" model="crm.team">
+            <field name="name">Closing Team</field>
+            <field name="use_leads" eval="False"/>
+            <field name="use_opportunities" eval="True"/>
+            <field name="sequence">20</field>
+        </record>
+
+    </data>
+</odoo>

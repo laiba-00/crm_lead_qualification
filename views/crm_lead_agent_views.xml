@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--
+        ================================================================
+        REQ #3: Sales Agent's own working pipeline - editable.
+        Record rule rule_lead_agent_own_active already restricts this
+        to the agent's own, not-yet-transferred leads, so no user_id
+        domain is needed on the action itself for security - it's
+        added anyway as a defence-in-depth filter, matching the same
+        condition the record rule enforces.
+        ================================================================
+    -->
+
+    <record id="view_crm_lead_agent_tree" model="ir.ui.view">
+        <field name="name">crm.lead.agent.tree</field>
+        <field name="model">crm.lead</field>
+        <field name="arch" type="xml">
+            <tree string="My Cold Leads" decoration-warning="stage_id.fold == True">
+                <field name="partner_name" string="Company Name"/>
+                <field name="contact_name"/>
+                <field name="phone"/>
+                <field name="email_from"/>
+                <field name="stage_id"/>
+                <field name="activity_date_deadline" string="Next Activity"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_crm_lead_agent_form" model="ir.ui.view">
+        <field name="name">crm.lead.agent.form</field>
+        <field name="model">crm.lead</field>
+        <field name="arch" type="xml">
+            <form string="Cold Lead">
+                <header>
+                    <button name="action_open_transfer_wizard"
+                            string="Mark as Hot Lead / Transfer to Closing Team"
+                            type="object"
+                            class="btn-primary"
+                            invisible="is_transferred"
+                            groups="crm_lead_qualification.group_lead_qualification_agent"/>
+                    <field name="stage_id" widget="statusbar"
+                           options="{'clickable': '1'}"
+                           readonly="is_transferred"/>
+                </header>
+                <sheet>
+                    <div class="alert alert-warning"
+                         role="alert"
+                         groups="crm_lead_qualification.group_lead_qualification_agent"
+                         invisible="not is_transferred">
+                        This lead has been transferred to the Closing Team.
+                        You can view it but cannot make changes.
+                    </div>
+                    <group>
+                        <group string="Company">
+                            <field name="name" string="Opportunity/Lead Name"/>
+                            <field name="partner_name" string="Company Name"/>
+                            <field name="contact_name"/>
+                            <field name="phone"/>
+                            <field name="email_from"/>
+                        </group>
+                        <group string="Qualification">
+                            <field name="qualification_agent_id" readonly="1"/>
+                            <field name="is_transferred" invisible="1"/>
+                            <field name="team_id" invisible="1"/>
+                            <field name="company_id" invisible="1"/>
+                            <field name="outcome" invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Call Notes &amp; Follow-Ups">
+                            <field name="description" placeholder="Call notes..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_crm_lead_agent_pipeline" model="ir.actions.act_window">
+        <field name="name">My Cold Leads</field>
+        <field name="res_model">crm.lead</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('is_transferred', '=', False)]</field>
+        <field name="context">{'default_type': 'lead'}</field>
+        <field name="view_ids"
+               eval="[(5, 0, 0),
+                      (0, 0, {'view_mode': 'tree', 'view_id': ref('view_crm_lead_agent_tree')}),
+                      (0, 0, {'view_mode': 'form', 'view_id': ref('view_crm_lead_agent_form')})]"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No cold leads assigned to you yet.
+            </p>
+        </field>
+    </record>
+
+    <!--
+        ================================================================
+        REQ #5: "My Qualified Leads" - read-only dashboard.
+        Record rule rule_lead_agent_own_transferred_readonly enforces
+        perm_write=False on these specific records, so this same form
+        view will render every field read-only automatically - no
+        readonly="1" needed field-by-field, Odoo handles it from the
+        access layer.
+        ================================================================
+    -->
+
+    <record id="view_crm_lead_agent_qualified_tree" model="ir.ui.view">
+        <field name="name">crm.lead.agent.qualified.tree</field>
+        <field name="model">crm.lead</field>
+        <field name="arch" type="xml">
+            <tree string="My Qualified Leads" create="0" delete="0">
+                <field name="partner_name" string="Company Name"/>
+                <field name="date_transferred"/>
+                <field name="closer_id" string="Assigned Closer"/>
+                <field name="stage_id" string="Current Status"/>
+                <field name="outcome"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_crm_lead_agent_qualified_form" model="ir.ui.view">
+        <field name="name">crm.lead.agent.qualified.form</field>
+        <field name="model">crm.lead</field>
+        <field name="arch" type="xml">
+            <form string="Qualified Lead" create="0" delete="0">
+                <sheet>
+                    <group>
+                        <group string="Lead">
+                            <field name="partner_name" string="Company Name"/>
+                            <field name="qualification_agent_id"/>
+                            <field name="team_id" invisible="1"/>
+                            <field name="company_id" invisible="1"/>
+                        </group>
+                        <group string="Closing Progress">
+                            <field name="date_transferred"/>
+                            <field name="closer_id" string="Assigned Closer"/>
+                            <field name="stage_id" string="Current Status"/>
+                            <field name="outcome"/>
+                        </group>
+                    </group>
+                    <group string="Closing Notes">
+                        <field name="closing_notes" nolabel="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_crm_lead_agent_qualified" model="ir.actions.act_window">
+        <field name="name">My Qualified Leads</field>
+        <field name="res_model">crm.lead</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('is_transferred', '=', True)]</field>
+        <field name="view_ids"
+               eval="[(5, 0, 0),
+                      (0, 0, {'view_mode': 'tree', 'view_id': ref('view_crm_lead_agent_qualified_tree')}),
+                      (0, 0, {'view_mode': 'form', 'view_id': ref('view_crm_lead_agent_qualified_form')})]"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No leads transferred to the Closing Team yet.
+            </p>
+        </field>
+    </record>
+
+</odoo>

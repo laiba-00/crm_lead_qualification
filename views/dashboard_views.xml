@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Client Action -->
+    <record id="action_manager_dashboard" model="ir.actions.client">
+        <field name="name">Manager Dashboard</field>
+        <field name="tag">crm_lead_qualification.manager_dashboard</field>
+    </record>
+
+    <!--
+        Dashboard as a separate top-level menu item in CRM app
+        sequence=1 puts it before Sales, Lead Qualification etc.
+    -->
+    <menuitem id="menu_manager_dashboard_root"
+              name="Dashboard"
+              parent="crm.crm_menu_root"
+              action="action_manager_dashboard"
+              groups="crm_lead_qualification.group_lead_qualification_manager"
+              sequence="1"/>
+
+</odoo>

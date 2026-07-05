@@ -1,0 +1,10 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_crm_lead_lead_qualification_agent,crm.lead.lead.qualification.agent,crm.model_crm_lead,crm_lead_qualification.group_lead_qualification_agent,1,1,0,0
+access_crm_lead_lead_qualification_closer,crm.lead.lead.qualification.closer,crm.model_crm_lead,crm_lead_qualification.group_lead_qualification_closer,1,1,0,0
+access_crm_lead_lead_qualification_manager,crm.lead.lead.qualification.manager,crm.model_crm_lead,crm_lead_qualification.group_lead_qualification_manager,1,1,1,0
+access_crm_lead_lead_qualification_admin,crm.lead.lead.qualification.admin,crm.model_crm_lead,crm_lead_qualification.group_lead_qualification_admin,1,1,1,1
+access_wizard_agent,crm.lead.transfer.wizard.agent,model_crm_lead_transfer_wizard,crm_lead_qualification.group_lead_qualification_agent,1,1,1,1
+access_wizard_manager,crm.lead.transfer.wizard.manager,model_crm_lead_transfer_wizard,crm_lead_qualification.group_lead_qualification_manager,1,1,1,1
+access_wizard_admin,crm.lead.transfer.wizard.admin,model_crm_lead_transfer_wizard,crm_lead_qualification.group_lead_qualification_admin,1,1,1,1
+access_mail_activity_agent,mail.activity.agent,mail.model_mail_activity,crm_lead_qualification.group_lead_qualification_agent,1,1,1,1
+access_mail_activity_closer,mail.activity.closer,mail.model_mail_activity,crm_lead_qualification.group_lead_qualification_closer,1,1,1,1

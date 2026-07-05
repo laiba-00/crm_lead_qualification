@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+
+        <!--
+            ============================================================
+            MODULE SECURITY CATEGORY
+            Groups shown grouped under one heading in
+            Settings > Users > Access Rights, instead of scattered
+            across the generic "Sales" category.
+            ============================================================
+        -->
+        <record id="module_category_lead_qualification" model="ir.module.category">
+            <field name="name">Lead Qualification</field>
+            <field name="sequence">20</field>
+        </record>
+
+        <!--
+            ============================================================
+            GROUPS
+
+            IMPORTANT: none of these groups imply or are related to the
+            stock 'Sales: Administrator' (sales_team.group_sale_manager)
+            or 'Sales: Administrator' full-access group in any way.
+            That stock group carries its own unrestricted record rule
+            on crm.lead (crm.crm_lead_all_rule), and rules combine with
+            OR within a single operation - so if any test user is a
+            member of that stock group, it will silently override every
+            restrictive rule below. This was the exact bug hit earlier.
+
+            Each group only implies base.group_user (Internal User),
+            which is the minimum needed to log in and use the backend -
+            nothing sales-specific.
+            ============================================================
+        -->
+
+        <record id="group_lead_qualification_agent" model="res.groups">
+            <field name="name">Sales Agent</field>
+            <field name="category_id" ref="module_category_lead_qualification"/>
+            <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+            <field name="comment">Req #3: can view and work only their
+                own assigned cold leads. Cannot see other agents'
+                leads. Loses edit access once a lead is transferred
+                (read-only view retained for req #5).</field>
+        </record>
+
+        <record id="group_lead_qualification_closer" model="res.groups">
+            <field name="name">Closer</field>
+            <field name="category_id" ref="module_category_lead_qualification"/>
+            <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+            <field name="comment">Req #6: can only work Hot Leads that
+                have been transferred to them specifically.</field>
+        </record>
+
+        <record id="group_lead_qualification_manager" model="res.groups">
+            <field name="name">Manager</field>
+            <field name="category_id" ref="module_category_lead_qualification"/>
+            <field name="implied_ids" eval="[(4, ref('base.group_user')),
+                                              (4, ref('group_lead_qualification_agent')),
+                                              (4, ref('group_lead_qualification_closer'))]"/>
+            <field name="comment">Req #1, #7: full visibility of every
+                lead, can assign/reassign, view reports across all
+                agents and closers.</field>
+        </record>
+
+        <record id="group_lead_qualification_admin" model="res.groups">
+            <field name="name">Administrator</field>
+            <field name="category_id" ref="module_category_lead_qualification"/>
+            <field name="implied_ids" eval="[(4, ref('group_lead_qualification_manager'))]"/>
+            <field name="comment">Full technical access to this
+                module's configuration (teams, stages) in addition to
+                everything Manager can do.</field>
+        </record>
+
+        <!--
+            ============================================================
+            RECORD RULES on crm.lead
+
+            Rules attached to different groups combine with OR for the
+            same operation - a user matching ANY applicable rule gets
+            that access. This is why Sales Agent has TWO separate rules
+            below (Rule A and Rule B) rather than one combined domain:
+            they need different permission flags (write vs read-only),
+            which a single rule cannot express.
+            ============================================================
+        -->
+
+        <!-- Administrator: unrestricted, all operations -->
+        <record id="rule_lead_admin_full_access" model="ir.rule">
+            <field name="name">Lead Qualification: Administrator full access</field>
+            <field name="model_id" ref="crm.model_crm_lead"/>
+            <field name="groups" eval="[(4, ref('group_lead_qualification_admin'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <!--
+            Manager: req #1 (central database, complete visibility) and
+            req #7 (assign/reassign, reporting across all employees).
+            Not given unlink by default - deleting leads was not part
+            of the doc's requirements, so we default to the safer
+            option. Change perm_unlink to True if the client asks.
+        -->
+        <record id="rule_lead_manager_full_access" model="ir.rule">
+            <field name="name">Lead Qualification: Manager full access</field>
+            <field name="model_id" ref="crm.model_crm_lead"/>
+            <field name="groups" eval="[(4, ref('group_lead_qualification_manager'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!--
+            Sales Agent - Rule A (req #2, #3): full working access to
+            their own leads, ONLY while still in the qualification
+            phase (is_transferred = False). This is the agent's active
+            editable pipeline.
+        -->
+        <record id="rule_lead_agent_own_active" model="ir.rule">
+            <field name="name">Lead Qualification: Agent own active leads</field>
+            <field name="model_id" ref="crm.model_crm_lead"/>
+            <field name="groups" eval="[(4, ref('group_lead_qualification_agent'))]"/>
+            <field name="domain_force">[('qualification_agent_id', '=', user.id), ('is_transferred', '=', False)]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!--
+            Sales Agent - Rule B (req #5): read-only access to their
+            own leads AFTER transfer. This is what powers the
+            "My Qualified Leads" dashboard - the agent can see status,
+            closer, outcome, but the form will render read-only because
+            perm_write is False here for these specific records.
+        -->
+        <record id="rule_lead_agent_own_transferred_readonly" model="ir.rule">
+            <field name="name">Lead Qualification: Agent own transferred leads (read-only)</field>
+            <field name="model_id" ref="crm.model_crm_lead"/>
+            <field name="groups" eval="[(4, ref('group_lead_qualification_agent'))]"/>
+            <field name="domain_force">[('qualification_agent_id', '=', user.id), ('is_transferred', '=', True)]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!--
+            Closer (req #6): full working access, but only to leads
+            transferred specifically to them. No perm_create - closers
+            work leads that arrive via transfer, they do not originate
+            new leads in this workflow per the doc.
+        -->
+        <record id="rule_lead_closer_own" model="ir.rule">
+            <field name="name">Lead Qualification: Closer own transferred leads</field>
+            <field name="model_id" ref="crm.model_crm_lead"/>
+            <field name="groups" eval="[(4, ref('group_lead_qualification_closer'))]"/>
+            <field name="domain_force">[('closer_id', '=', user.id)]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+    </data>
+</odoo>

@@ -1,0 +1,254 @@
+/* =============================================
+   CRM Lead Qualification - Manager Dashboard
+   ============================================= */
+
+.o_crm_dashboard {
+    padding: 24px;
+    background: #f8f9fa;
+    font-family: 'Roboto', sans-serif;
+    overflow-y: auto;
+    height: 100%;
+    box-sizing: border-box;
+}
+
+/* Loading */
+.o_dashboard_loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 400px;
+    gap: 16px;
+    color: #6c757d;
+}
+
+/* Header */
+.o_dashboard_header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.o_dashboard_header h2 {
+    color: #2d2d6b;
+    font-weight: 700;
+    margin: 0;
+}
+
+/* KPI CARDS */
+.o_kpi_row {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.o_kpi_card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    border-top: 4px solid transparent;
+    transition: transform 0.2s;
+}
+
+.o_kpi_card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+}
+
+.o_kpi_blue   { border-top-color: #3B82F6; }
+.o_kpi_orange { border-top-color: #F59E0B; }
+.o_kpi_green  { border-top-color: #10B981; }
+.o_kpi_red    { border-top-color: #EF4444; }
+.o_kpi_purple { border-top-color: #8B5CF6; }
+
+.o_kpi_icon {
+    font-size: 28px;
+    margin-bottom: 8px;
+}
+
+.o_kpi_value {
+    font-size: 32px;
+    font-weight: 700;
+    color: #1f2937;
+    line-height: 1;
+    margin-bottom: 6px;
+}
+
+.o_kpi_label {
+    font-size: 13px;
+    color: #6b7280;
+    font-weight: 500;
+}
+
+/* DASHBOARD ROW */
+.o_dashboard_row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+/* CARDS */
+.o_dashboard_card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    margin-bottom: 16px;
+}
+
+.o_card_title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #2d2d6b;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #f3f4f6;
+}
+
+/* CHART */
+.o_chart_container {
+    height: 250px;
+    position: relative;
+}
+
+/* No chart message */
+.o_no_chart {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 200px;
+    color: #9ca3af;
+    font-size: 14px;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* TABLES */
+.o_dashboard_table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.o_dashboard_table thead tr {
+    background: #f9fafb;
+}
+
+.o_dashboard_table th {
+    padding: 10px 12px;
+    text-align: left;
+    font-weight: 600;
+    color: #374151;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.o_dashboard_table td {
+    padding: 12px 12px;
+    border-bottom: 1px solid #f3f4f6;
+    color: #4b5563;
+    vertical-align: middle;
+}
+
+.o_dashboard_table tbody tr:hover {
+    background: #f9fafb;
+}
+
+/* Agent Card */
+.o_agent_card {
+    margin-bottom: 24px;
+}
+
+/* Badges */
+.o_agent_badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    background: #7C3AED;
+    color: white;
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: 600;
+    margin-right: 8px;
+}
+
+.o_hot_badge {
+    background: #FEF3C7;
+    color: #D97706;
+    padding: 3px 8px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.o_rate_badge {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.o_rate_good {
+    background: #D1FAE5;
+    color: #065F46;
+}
+
+.o_rate_low {
+    background: #FEE2E2;
+    color: #991B1B;
+}
+
+/* Won/Lost text colors */
+.o_won_text { color: #10B981; font-weight: 600; }
+.o_lost_text { color: #EF4444; font-weight: 600; }
+
+/* Progress Bar */
+.o_progress_bar {
+    width: 80px;
+    height: 6px;
+    background: #e5e7eb;
+    border-radius: 3px;
+    overflow: hidden;
+    display: inline-block;
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
+.o_progress_fill {
+    height: 100%;
+    background: linear-gradient(90deg, #7C3AED, #10B981);
+    border-radius: 3px;
+    transition: width 0.6s ease;
+}
+
+/* No data message */
+.o_no_data {
+    text-align: center;
+    color: #9ca3af;
+    padding: 40px;
+    font-size: 14px;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .o_kpi_row {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .o_kpi_row {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .o_dashboard_row {
+        grid-template-columns: 1fr;
+    }
+}

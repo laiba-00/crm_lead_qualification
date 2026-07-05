@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--
+        All menus live under the existing CRM app (crm.crm_menu_root)
+        as a new top-level section "Lead Qualification", so users
+        access everything from the CRM app they already know.
+    -->
+
+    <menuitem id="menu_crm_lead_qualification_root"
+              name="Lead Qualification"
+              parent="crm.crm_menu_root"
+              sequence="5"/>
+
+    <!-- Req #3: Sales Agent working pipeline -->
+    <menuitem id="menu_crm_lead_agent_pipeline"
+              name="My Cold Leads"
+              parent="menu_crm_lead_qualification_root"
+              action="action_crm_lead_agent_pipeline"
+              groups="group_lead_qualification_agent"
+              sequence="10"/>
+
+    <!-- Req #5: Agent read-only qualified leads dashboard -->
+    <menuitem id="menu_crm_lead_agent_qualified"
+              name="My Qualified Leads"
+              parent="menu_crm_lead_qualification_root"
+              action="action_crm_lead_agent_qualified"
+              groups="group_lead_qualification_agent"
+              sequence="20"/>
+
+    <!-- Req #6: Closer working pipeline -->
+    <menuitem id="menu_crm_lead_closer_pipeline"
+              name="My Hot Leads"
+              parent="menu_crm_lead_qualification_root"
+              action="action_crm_lead_closer_pipeline"
+              groups="group_lead_qualification_closer"
+              sequence="30"/>
+
+    <!-- Req #7: Manager full visibility -->
+    <menuitem id="menu_crm_lead_manager_all"
+              name="All Leads"
+              parent="menu_crm_lead_qualification_root"
+              action="action_crm_lead_manager_all"
+              groups="group_lead_qualification_manager"
+              sequence="40"/>
+
+    <!-- Req #7: Manager reporting -->
+    <menuitem id="menu_crm_lead_reporting"
+              name="Lead Reports"
+              parent="menu_crm_lead_qualification_root"
+              groups="group_lead_qualification_manager"
+              sequence="50"/>
+
+    <menuitem id="menu_crm_lead_report_conversion"
+              name="Conversion Reports"
+              parent="menu_crm_lead_reporting"
+              action="action_crm_lead_report"
+              groups="group_lead_qualification_manager"
+              sequence="10"/>
+
+</odoo>

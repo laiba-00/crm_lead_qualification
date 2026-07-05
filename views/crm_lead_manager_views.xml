@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--
+        ================================================================
+        REQ #7: Manager dashboard - view every lead, assign/reassign.
+        No domain on the action below - rule_lead_manager_full_access
+        already grants unrestricted visibility, so this view simply
+        does not add any further narrowing.
+        ================================================================
+    -->
+
+    <record id="view_crm_lead_manager_tree" model="ir.ui.view">
+        <field name="name">crm.lead.manager.tree</field>
+        <field name="model">crm.lead</field>
+        <field name="arch" type="xml">
+            <tree string="All Leads" default_order="qualification_agent_id">
+                <field name="partner_name" string="Company Name"/>
+                <field name="stage_id"/>
+                <field name="team_id"/>
+                <!--
+                    Req #7 "assign and reassign leads": directly
+                    editable in the list. The write() override on
+                    crm.lead keeps user_id synced automatically the
+                    moment this field is changed here, regardless of
+                    whether it's edited in list view or form view.
+                -->
+                <field name="qualification_agent_id" string="Sales Agent"/>
+                <field name="closer_id" string="Closer"/>
+                <field name="is_transferred" string="Transferred"/>
+                <field name="outcome"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_crm_lead_manager_form" model="ir.ui.view">
+        <field name="name">crm.lead.manager.form</field>
+        <field name="model">crm.lead</field>
+        <field name="arch" type="xml">
+            <form string="Lead">
+                <header>
+                    <field name="stage_id" widget="statusbar"
+                           options="{'clickable': '1'}"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group string="Company">
+                            <field name="name" string="Opportunity/Lead Name"/>
+                            <field name="partner_name" string="Company Name"/>
+                            <field name="contact_name"/>
+                            <field name="phone"/>
+                            <field name="email_from"/>
+                        </group>
+                        <group string="Assignment">
+                            <!--
+                                Req #7: manual assign/reassign at any
+                                point, not restricted to only the
+                                initial assignment - a manager can
+                                reassign mid-pipeline if needed.
+                            -->
+                            <field name="team_id"/>
+                            <field name="company_id" invisible="1"/>
+                            <field name="qualification_agent_id" string="Sales Agent"/>
+                            <field name="closer_id" string="Closer"/>
+                            <field name="is_transferred" readonly="1"/>
+                            <field name="date_transferred" readonly="1"/>
+                        </group>
+                    </group>
+                    <group string="Closing Progress" invisible="not is_transferred">
+                        <field name="outcome"/>
+                        <field name="closing_notes"/>
+                    </group>
+                    <notebook>
+                        <page string="Notes">
+                            <field name="description"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_crm_lead_manager_search" model="ir.ui.view">
+        <field name="name">crm.lead.manager.search</field>
+        <field name="model">crm.lead</field>
+        <field name="arch" type="xml">
+            <search string="Search Leads">
+                <field name="partner_name" string="Company Name"/>
+                <field name="qualification_agent_id" string="Sales Agent"/>
+                <field name="closer_id" string="Closer"/>
+                <filter string="Not Yet Transferred"
+                        name="filter_not_transferred"
+                        domain="[('is_transferred', '=', False)]"/>
+                <filter string="Transferred to Closing Team"
+                        name="filter_transferred"
+                        domain="[('is_transferred', '=', True)]"/>
+                <filter string="Won" name="filter_won"
+                        domain="[('outcome', '=', 'won')]"/>
+                <filter string="Lost" name="filter_lost"
+                        domain="[('outcome', '=', 'lost')]"/>
+                <separator/>
+                <!--
+                    Req #7 "track agent productivity" /
+                    "reports by employee": groupbys give the manager
+                    an instant breakdown without needing the pivot
+                    view for quick checks.
+                -->
+                <group expand="0" string="Group By">
+                    <filter string="Sales Agent" name="groupby_agent"
+                            context="{'group_by': 'qualification_agent_id'}"/>
+                    <filter string="Closer" name="groupby_closer"
+                            context="{'group_by': 'closer_id'}"/>
+                    <filter string="Stage" name="groupby_stage"
+                            context="{'group_by': 'stage_id'}"/>
+                    <filter string="Team" name="groupby_team"
+                            context="{'group_by': 'team_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_crm_lead_manager_all" model="ir.actions.act_window">
+        <field name="name">All Leads</field>
+        <field name="res_model">crm.lead</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_ids"
+               eval="[(5, 0, 0),
+                      (0, 0, {'view_mode': 'tree', 'view_id': ref('view_crm_lead_manager_tree')}),
+                      (0, 0, {'view_mode': 'form', 'view_id': ref('view_crm_lead_manager_form')})]"/>
+        <field name="search_view_id" ref="view_crm_lead_manager_search"/>
+        <field name="context">{'search_default_filter_not_transferred': 0}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No leads in the system yet.
+            </p>
+        </field>
+    </record>
+
+</odoo>

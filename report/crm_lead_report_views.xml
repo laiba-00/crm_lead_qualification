@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--
+        ================================================================
+        REQ #7: "Measure conversion rates at every stage", "reports by
+        employee", "how many Hot Leads become customers".
+
+        Pivot and graph views let the manager drag-and-drop different
+        groupings themselves (agent x stage, agent x outcome, etc.)
+        rather than us pre-building every possible report combination -
+        this is the standard Odoo way to satisfy open-ended reporting
+        requirements without hardcoding a fixed set of reports that
+        might not match what the manager actually wants to see week to
+        week.
+
+        DEPENDENCY: this file's action reuses
+        view_crm_lead_manager_search (defined in
+        views/crm_lead_manager_views.xml), so that file must be loaded
+        first in __manifest__.py's data list.
+        ================================================================
+    -->
+
+    <record id="view_crm_lead_report_pivot" model="ir.ui.view">
+        <field name="name">crm.lead.report.pivot</field>
+        <field name="model">crm.lead</field>
+        <field name="arch" type="xml">
+            <pivot string="Lead Conversion Report">
+                <!--
+                    Default: rows = Sales Agent, columns = Outcome.
+                    Directly answers "how many Hot Leads each agent
+                    generates" and "how many become customers" in one
+                    view - manager can re-drag to Stage, Closer, or
+                    Team from here.
+                -->
+                <field name="qualification_agent_id" type="row"/>
+                <field name="outcome" type="col"/>
+                <field name="stage_id" type="row"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="view_crm_lead_report_graph" model="ir.ui.view">
+        <field name="name">crm.lead.report.graph</field>
+        <field name="model">crm.lead</field>
+        <field name="arch" type="xml">
+            <graph string="Lead Conversion Report" type="bar">
+                <field name="qualification_agent_id" type="row"/>
+                <field name="outcome" type="col"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="action_crm_lead_report" model="ir.actions.act_window">
+        <field name="name">Conversion Reports</field>
+        <field name="res_model">crm.lead</field>
+        <field name="view_mode">pivot,graph,tree</field>
+        <field name="view_ids"
+               eval="[(5, 0, 0),
+                      (0, 0, {'view_mode': 'pivot', 'view_id': ref('view_crm_lead_report_pivot')}),
+                      (0, 0, {'view_mode': 'graph', 'view_id': ref('view_crm_lead_report_graph')}),
+                      (0, 0, {'view_mode': 'tree', 'view_id': ref('view_crm_lead_manager_tree')})]"/>
+        <field name="search_view_id" ref="view_crm_lead_manager_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No data to report on yet.
+            </p>
+        </field>
+    </record>
+
+</odoo>

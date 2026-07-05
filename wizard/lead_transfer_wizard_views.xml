@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_crm_lead_transfer_wizard_form" model="ir.ui.view">
+        <field name="name">crm.lead.transfer.wizard.form</field>
+        <field name="model">crm.lead.transfer.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Transfer Hot Lead">
+                <group>
+                    <field name="lead_id"/>
+                    <field name="closer_id"
+                           placeholder="Select Department Head or Partner..."/>
+                </group>
+                <footer>
+                    <button name="action_confirm_transfer"
+                            string="Transfer to Closing Team"
+                            type="object"
+                            class="btn-primary"/>
+                    <button string="Cancel"
+                            class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+</odoo>
